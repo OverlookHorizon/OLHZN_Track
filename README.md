@@ -1,10 +1,18 @@
-## OLHZN_Track 
+# About Overlook Horizon Inc.
+
+Overlook Horizon Inc. (OLHZN) is a 501(c)(3) non-profit charitable organization in the United States with the goal of educating and inspiring the next generation of scientists and engineers to shape our world. We fly high altitude weather balloons for science and fun! If you like our work, please consider making a tax-dedutible donation to help support us at: http://donorbox.org/olhzn
+
+## OLHZN_Track Software
 
 This is a fork of David Akerman's FlexTrack library: https://github.com/daveake/FlexTrack
 
 This is an Arduino Mega based APRS radio tracking system for high altitude weather balloons.
 
 This code provides simultaneous (where legal and supported by the hardware installed) transmission of radio telemetry via RTTY and APRS on OLHZN Arduino circuit boards for High Altitude Ballooning.
+
+## Buy an OLHZN Circuit Board
+
+This code is designed for our OLHZN Arduino Mega compatible circuit board (Revision 5). You're certainly welcome to use and adapt this code for your own projects, but you can also purchase one of our circuit boards here: http://overlookhorizon.com/buy-circuit-boards
 
 ## Disclaimer
 
