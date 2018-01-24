@@ -1,6 +1,6 @@
 # About Overlook Horizon Inc.
 
-Overlook Horizon Inc. (OLHZN) is a 501(c)(3) non-profit charitable organization in the United States with the goal of educating and inspiring the next generation of scientists and engineers to shape our world. We fly high altitude weather balloons for science and fun! If you like our work, please consider making a tax-dedutible donation to help support us at: http://donorbox.org/olhzn
+Overlook Horizon Inc. (OLHZN) is a 501(c)(3) non-profit charitable organization in the United States with the goal of educating and inspiring the next generation of scientists and engineers to shape our world. We fly high altitude weather balloons for science and fun! If you like our work, please consider making a tax-deductible donation to help support us at: http://donorbox.org/olhzn
 
 ###### Follow Us Online
 - **Facebook:** http://facebook.com/overlookhorizon
@@ -22,7 +22,7 @@ This code is designed for our OLHZN Arduino Mega compatible circuit board (Revis
 
 ## How to launch a high altitude weather balloon
 
-Need further guidance on cameras, balloons, parachutes, etc? See our how-to guide here: http://overlookhorizon.com/how-to
+Need further guidance on cameras, balloons, parachutes, etc.? See our how-to guide here: http://overlookhorizon.com/how-to
 
 ## Disclaimer
 
