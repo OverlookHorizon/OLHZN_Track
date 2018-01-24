@@ -20,7 +20,7 @@ It is YOUR responsibility to ensure your hardware and code is used safely and le
 
 ## Further Reading on High Altitude Weather Balloon Safety
 
-Please read this http://overlookhorizon/safety
+Please read this http://overlookhorizon.com/safety
 
 ## License
 
