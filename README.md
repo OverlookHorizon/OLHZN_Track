@@ -21,6 +21,9 @@ This code provides transmission of radio telemetry via APRS as well as telemetry
 
 This code is designed for our OLHZN Arduino Mega compatible circuit board (Revision 5). You're certainly welcome to use and adapt this code for your own projects, but you can also purchase one of our circuit boards here: http://overlookhorizon.com/buy-circuit-boards
 
+A parts list and assembly instructions for our OLHZN Circuit Boards can be found here: [/OLHZN_Track/Documentation/](https://github.com/OverlookHorizon/OLHZN_Track/tree/master/Documentation)
+
+
 ## How to launch a high altitude weather balloon
 
 Need further guidance on cameras, balloons, parachutes, etc.? See our how-to guide here: http://overlookhorizon.com/how-to
