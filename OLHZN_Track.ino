@@ -76,7 +76,7 @@
   //#define BURST_CAM_PIN       36              //deprecated from rev. 4 board
   //#define BURST_CAM_ALT       0               //deprecated from rev. 4 board
   #define ANOMALY_ALARM_PIN   52
-  #define DEBUG_SERIAL        Serial
+  //#define DEBUG_SERIAL        Serial          //uncomment for debugging via the serial terminal
   #define USE_WATCHDOG                          //automatically reboot the Arduino if it hangs
   
   #define DHTPIN 24                             // what digital pin we're connected to
@@ -94,10 +94,6 @@
   #ifndef GPS_I2C
     #define GPS_SERIAL Serial3
   #endif
-#endif
-
-#ifndef DEBUG_SERIAL
-  #define DEBUG_SERIAL Serial
 #endif
 
 #ifdef USE_RTC
