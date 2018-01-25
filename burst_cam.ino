@@ -10,6 +10,10 @@ void SetupBurstCamera(){
 }
 
 void CheckBurstCamera(){
+  //deprecated on revision 5+
+  //burst camera now on for entire flight and control by onboard slide switch
+  //no longer controlled by software
+  
   if(GPS.Satellites>=3){
       if(GPS.AltitudeF<BURST_CAM_ALT && !startedBurstCam() && !didWriteFile()){
         //digitalWrite(BURST_CAM_PIN,LOW);

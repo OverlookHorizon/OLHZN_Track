@@ -1,7 +1,8 @@
 #ifdef USE_RTC
 
-static const unsigned int curYear = 2017;
+static const unsigned int curYear = 2018;       //be sure to change this each year
 bool time_adjusted = false;
+char time_buffer[20];
 
 void SetupRTC(){  
   RTC.begin();
@@ -18,7 +19,7 @@ void SetupRTC(){
         DEBUG_SERIAL.print(F(" != Current Static Year: "));
         DEBUG_SERIAL.println(curYear);
       #endif
-      failure(F("RTC BAD CLOCK"));
+      failure(508);
     }
   }
 }
@@ -28,7 +29,8 @@ void CheckRTC(){
     RTC.adjust(DateTime(gps.date.year(), gps.date.month(), gps.date.day(), gps.time.hour(), gps.time.minute(), gps.time.second())); 
     time_adjusted = true;
   }  
-  RTCO.timestamp = formatDateParam(RTC.now().year()) + "-" + formatDateParam(RTC.now().month()) + "-" + formatDateParam(RTC.now().day()) + " " + formatDateParam(RTC.now().hour()) + ":" + formatDateParam(RTC.now().minute()) + ":" + formatDateParam(RTC.now().second());  
+  sprintf(time_buffer,"%04u-%02u-%02u %02u:%02u:%02u", RTC.now().year(),RTC.now().month(),RTC.now().day(),RTC.now().hour(),RTC.now().minute(),RTC.now().second());
+  RTCO.timestamp = time_buffer;
   RTCO.unix = RTC.now().unixtime();  
 }
 

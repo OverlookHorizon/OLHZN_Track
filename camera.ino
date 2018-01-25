@@ -1,3 +1,5 @@
+//deprecated since revision 2 board
+//no longer using canon cameras via the CHDK
 
 bool focusing = false;
 

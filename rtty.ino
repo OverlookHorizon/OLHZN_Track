@@ -27,14 +27,13 @@ unsigned long nextRTTY = 0;
 
 // Code
 
-void SetupRTTY(void)
-{
+void SetupRTTY(void){
   pinMode(RTTY_DATA, OUTPUT);
     
-#ifdef RTTY_ENABLE
-  pinMode(RTTY_ENABLE, OUTPUT);
-  digitalWrite(RTTY_ENABLE, LOW);
-#endif
+  #ifdef RTTY_ENABLE
+    pinMode(RTTY_ENABLE, OUTPUT);
+    digitalWrite(RTTY_ENABLE, LOW);
+  #endif
    
   DataBits = 7;
   StopBits = 2;
@@ -44,8 +43,7 @@ void SetupRTTY(void)
   #endif
 }
 
-void CheckRTTY(void)
-{
+void CheckRTTY(void){
   if(((GPS.Satellites>=4 && GPS.Lock==1) || getLogStarted()) && (GPS.AltitudeF >= 5000 || GPS.AltitudeF < 2000) && !isTX()){
     if ((millis() - last_rtty) >= (getRTTYInterval() * 1000L)){
       SendingNow = true;
@@ -169,7 +167,7 @@ int getRTTYInterval(){
   }
 }
 int getRTTYAttempts(){
-  //more broadcast repeats when landed and more when long gaps between transmissions
-  
+  //TODO: perform more broadcast sentence repeats when landed and more when long gaps between transmissions?
+  //TODO: move this to a dedicated transmitter on a different frequency from APRS
 }
 

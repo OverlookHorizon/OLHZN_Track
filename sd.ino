@@ -10,14 +10,13 @@ bool getLogStarted(){
 
 #include <SD.h>
 char filename[20];
-char jsonString[200];
-uint8_t jsonIndxCtr = 0;
 File myFile;
 File altFile;
 float msrate, ftrate, mphrate;
 char alt_filename[15];
 char boot_filename[15];
 char sdLine[600];
+char elapsedTime[12];
 unsigned long last_sd_write = 0;
 boolean anomaly_on = true;
 boolean needs_header = true;
@@ -27,10 +26,11 @@ void SetupSD(){
   
   SdFile::dateTimeCallback(dateTime); 
   if (!SD.begin(10, 11, 12, 13)) {
-    failure(F("SD CARD"));
+    failure(509);
   }
   snprintf(filename,12,"log.csv");
-  
+
+////  create unique file on every reboot  
 //  unsigned int ctr = 0;
 //  while(SD.exists(filename)){
 //    ctr++;
@@ -54,10 +54,10 @@ void SetupSD(){
   myFile = SD.open(filename, FILE_WRITE);  
   if(needs_header){
     if (myFile) {
-      myFile.println(F("Elapsed,Onboard Timestamp,Unix Timestamp,Satellites,GPS Timestamp,GPS Date Age,HDOP,Latitude,Longitude,GPS Age,Launch Latitude,Launch Longitude,Distance to Launch Site (mi),Course to Launch Site,Cardinal to Launch Site,Altitude (m),Altitude (ft),Course,Cardinal,Speed (kmph),Speed (mph),Temp Sensor 1,Temp Sensor 2,Internal Temp Sensor (c),Relative Altitude (m), Relative Altitude (ft),Baseline Pressure (mb),Pressure (mb),Humidity (%),Humidity Temp (c),Humidity Temp (f),Heat Index (f),Heat Index (c),Free RAM,Battery Voltage,Camera Voltage 1,Camera Voltage 2,Burst Cam,Hit Altitude,Buzzer On,Anomaly,Ascent Rate (m/s),Ascent Rate (ft/s),Ascent Rate (mph),Last Transmission,Next TX (s)"));
+      myFile.println(F("Elapsed,Onboard Timestamp,Unix Timestamp,Satellites,GPS Timestamp,GPS Date Age,HDOP,Latitude,Longitude,GPS Age,Launch Latitude,Launch Longitude,Distance to Launch Site (mi),Course to Launch Site,Cardinal to Launch Site,Altitude (m),Altitude (ft),Course,Cardinal,Speed (kmph),Speed (mph),Temp Sensor 1,Temp Sensor 2,Internal Temp Sensor (c),Relative Altitude (m), Relative Altitude (ft),Baseline Pressure (mb),Pressure (mb),Humidity (%),Humidity Temp (c),Humidity Temp (f),Heat Index (f),Heat Index (c),Dew Point (c),Dew Point (f),Free RAM,Battery Voltage,Camera Voltage 1,Camera Voltage 2,Burst Cam,Hit Altitude,Buzzer On,Anomaly,Ascent Rate (m/s),Ascent Rate (ft/s),Ascent Rate (mph),Last Transmission,Next TX (s)"));
       myFile.close();
     }else{
-      failure(F("FILE OPEN FAILED IN HEADER"));
+      failure(510);
     }
   }
   pinMode(ANOMALY_ALARM_PIN,OUTPUT);  
@@ -66,7 +66,7 @@ void SetupSD(){
 
 
 void CheckSD(){
-  //construct log string & write
+  //construct log string & write to sd card
   
   if(log_started || (GPS.Lock==1 && GPS.Satellites>=3)){
     if(millis() - last_sd_write >= SD_WRITE_TIME && !isTX()){ 
@@ -80,58 +80,59 @@ void CheckSD(){
         myFile.close();  
       }
       myFile = SD.open(filename, FILE_WRITE);
-      msrate = getAscentRate();
-      ftrate = getAscentRateFT();
-      mphrate = getAscentRateMPH();
+      calculateAscentRate();
+      dtostrf((millis()/1000.00),6,2,elapsedTime);
       if(myFile){        
         snprintf(sdLine,
                   600,
-                  "%s,%s,%lu,%u,%s,%u,%u,%s,%s,%u,%s,%s,%s,%d,%s,%lu,%lu,%d,%s,%u,%u,%d,%d,%d,%s,%s,%d,%d,%s,%s,%s,%s,%s,%d,%s,%s,%s,%u,%u,%u,%u,%s,%s,%s,%s,%lu",
-                  String(millis() / 1000.00).c_str(),
-                  RTCO.timestamp.c_str(),
+                  "%s,%s,%lu,%u,%s,%u,%u,%s,%s,%u,%s,%s,%s,%d,%s,%lu,%lu,%d,%s,%u,%u,%d,%d,%d,%d,%d,%d,%d,%s,%s,%s,%s,%s,%s,%s,%d,%s,%s,%s,%u,%u,%u,%u,%s,%s,%s,%s,%lu",
+                  elapsedTime,
+                  RTCO.timestamp,
                   RTCO.unix,
                   GPS.Satellites,
-                  GPS.Timestamp.c_str(),
+                  GPS.Timestamp,
                   GPS.DateAge,
                   GPS.HDOP,
-                  String(GPS.Latitude,6).c_str(),
-                  String(GPS.Longitude,6).c_str(),
+                  getLatitudeChar(),
+                  getLongitudeChar(),
                   GPS.Age,
-                  String(GPS.LaunchLatitude,6).c_str(),
-                  String(GPS.LaunchLongitude,6).c_str(),
-                  String(GPS.LaunchDistance).c_str(),
+                  getLaunchLatitudeChar(),
+                  getLaunchLongitudeChar(),
+                  getLaunchDistanceChar(),
                   (int)GPS.LaunchCourse,
-                  GPS.LaunchCardinal.c_str(),
+                  getLaunchCardinalDirection(),
                   (unsigned long)GPS.Altitude,
                   (unsigned long)GPS.AltitudeF,
                   (int)GPS.Course,
-                  GPS.Cardinal.c_str(),
+                  getCardinalDirection(),
                   (int)GPS.SpeedK,
                   (int)GPS.Speed,
                   (int)DS18B20_Temperatures[0],
                   (int)DS18B20_Temperatures[1],
                   (int)cToF(tempFromPressure),
-                  String(getRelativeAltitude()).c_str(),
-                  String(getRelativeAltitudeF()).c_str(),
+                  (int)getRelativeAltitude(),
+                  (int)getRelativeAltitudeF(),
                   (int)baselinePressure,
                   (int)tempPressure[1],
-                  String(readHumid()).c_str(),
-                  String(readHTempC()).c_str(),
-                  String(readHTempF()).c_str(),
-                  String(readHIF()).c_str(),
-                  String(readHIC()).c_str(),
+                  readHumidChar(),
+                  readHTempCChar(),
+                  readHTempFChar(),
+                  readHIFChar(),
+                  readHICChar(),
+                  readDPCChar(),
+                  readDPFChar(),
                   freeRam(),
-                  String(getVoltage(0)).c_str(),
-                  String(getVoltage(1)).c_str(),
-                  String(getVoltage(2)).c_str(),
+                  getVoltageChar(0),
+                  getVoltageChar(1),
+                  getVoltageChar(2),
                   startedBurstCam(),
                   hitAltitude(),
                   isBuzzerOn(),
                   isAnomalyOn(),
-                  String(msrate).c_str(),
-                  String(ftrate).c_str(),
-                  String(mphrate).c_str(),
-                  getLastTXtime().c_str(),
+                  getAscentRateMSChar(),
+                  getAscentRateFTChar(),
+                  getAscentRateMPHChar(),
+                  getLastTXtime(),
                   getNextAPRS()
                   );
         #ifdef DEBUG_SERIAL
@@ -190,7 +191,7 @@ bool altFileExists(){
 bool writeAltFileSD(){
   if(!SD.exists(alt_filename)){
     altFile = SD.open(alt_filename,FILE_WRITE);
-    altFile.println(RTCO.timestamp.c_str());
+    altFile.println(RTCO.timestamp);
     altFile.close();
     return true;
   }

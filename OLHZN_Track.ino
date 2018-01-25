@@ -1,17 +1,42 @@
 /*
  * 
  * TODO:
- * update system for new pins 22 (tx led) 36 (cam 3 enable) and 52 (lipo alarm)
- * add lipo alarm logic to trigger lipo alarm not only for low battery, but also for anomalies
  * add error debugging by writing to SD card for errors
  * add different LED pattern & tone for SD card failure since we can't debug at that point
+ * edit the NewTone library to change timers to avoid timer conflicts
+ * use json objects for settings and persistent storage inside a file on the SD card
  * 
- */
+ * EXTERNAL LIBRARY DEPENDENCIES
+ * RTClib.h
+ * NewTone.h
+ * OneWire.h
+ * DallasTemperature.h
+ * TinyGPS++.h
+ * DHT.h
+ * SFE_BMP180.h
+ * SD.h
+ * 
+ * FAILURE ERROR CODES
+ * In the event of an initial boot failure the WARN light will flash, the Piezo will beep and the Serial
+ * output will print a 3 digit error code.  Below are the codes and their meaning:
+ * 
+ * 501: Number of temperature sensors detected does not equal the number of expected sensors
+ * 502: Bad GPS wiring. Not receiving data from GPS chip.
+ * 503: Bad BMP180 wiring. Not communicating with BMP180 chip.
+ * 504: Unable to retrieve pressure measurement from BMP180
+ * 505: Unable to start a pressure measurement with the BMP180
+ * 506: Unable to retrieve temperature measurement from BMP180
+ * 507: Unable to start a temperature measurement with the BMP180
+ * 508: Bad or misconfigured RTC clock
+ * 509: Missing or corrupt SD card or SD card shield
+ * 510: SD Card file opening failed when writing header row
+ * 
+ */ 
 //------------------------------------------------------------------------------------------------------
 // CONFIGURATION SECTION.
 
   // RTTY settings
-//  #define RTTY_PAYLOAD_ID   "KD2KPZ"          // Do not use spaces.
+//  #define RTTY_PAYLOAD_ID   "CHANGEME"          // Do not use spaces.
 //  #define RTTY_FREQUENCY    144.390           // For devices that are frequency-agile
 //  #define RTTY_BAUD         100               // Comment out if not using RTTY
 //  #define RTTY_SHIFT        170               // Only used on boards where PWM is used for RTTY.
@@ -21,26 +46,16 @@
 //  #define RTTY_INTERVAL       45 //seconds
 //  #define RTTY_ATTEMPTS        3
 
-  // Power settings
-  //#define POWERSAVING	                      // Comment out to disable GPS power saving
-  
-  //APRS SSIDs FROM TRACKUINO
-  // - Balloons:  11
-  // - Cars:       9
-  // - Home:       0
-  // - IGate:      5
-
   // APRS settings
-  #define APRS_CALLSIGN    "KD2KPZ"               // Max 6 characters
+  #define APRS_CALLSIGN    "CHANGEME"            // Max 6 characters
   #define APRS_PATH_ALTITUDE   2000              // Below this altitude, ** in metres **, path will switch to WIDE1-1, WIDE2-1.  Above it will be or path or WIDE2-1 (see below)
-  #define APRS_HIGH_USE_WIDE2    1                 // 1 means WIDE2-1 is used at altitude; 0 means no path is used
+  #define APRS_HIGH_USE_WIDE2    1               // 1 means WIDE2-1 is used at altitude; 0 means no path is used
   
   #define APRS_PRE_EMPHASIS                      // Comment out to disable 3dB pre-emphasis.
   
-  #define APRS_COMMENT     "OverlookHorizon.com/flight-10"
+  #define APRS_COMMENT     "OverlookHorizon.com"
   #define APRS_TELEM_INTERVAL  5                // How often to send telemetry packets.... every X transmissions.  Comment out to disable  
   #define SD_WRITE_TIME       1000
-  //  #define LED_STATUS      A7
   #define LED_TX              22
   #define LED_OK              8
   #define LED_WARN            7
@@ -50,23 +65,26 @@
   #define WIREBUS             6
   #define EXPECTED_SENSORS    2
   #define BUZZER              A2
-  #define BUZZER_ALTITUDE     2000 //ft  should be 2000 feet or so
-  //#define CANON_PIN           4
-  //#define USE_RTC
-  //#define LOG_DATA
-  //#define LOG_PRESSURE
-  #define A0_MULTIPLIER        6   // (new board is 6x... 10k and 2k resistors)
-  #define A1_MULTIPLIER        2.5 //new board is 2.5x  (15k and 10k resistors)
-  #define A6_MULTIPLIER        2.5 //new board is 2.5x  (15k and 10k resistors)
-  //#define BURST_CAM_PIN       36
-  //#define BURST_CAM_ALT       0
-  //#define ANOMALY_ALARM_PIN   52
-  //#define DEBUG_SERIAL        Serial
-  //#define DHTPIN 24     // what digital pin we're connected to
-  //#define DHTTYPE DHT11   // DHT 11
-  //#define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
-  //#define DHTTYPE DHT21   // DHT 21 (AM2301)
-  #define USE_WATCHDOG
+  #define BUZZER_ALTITUDE     2000              //value in feet.  Should be about 500 feet above your expected landing elevation. About 2000 for OLHZN flights.
+  //#define CANON_PIN           4               //deprecated from rev. 2 board
+  #define USE_RTC
+  #define LOG_DATA
+  #define LOG_PRESSURE
+  #define A0_MULTIPLIER        6                //rev. 5 board is 6x    (10k and 2k resistors)
+  #define A1_MULTIPLIER        2.5              //rev. 5 board is 2.5x  (15k and 10k resistors)
+  #define A6_MULTIPLIER        2.5              //rev. 5 board is 2.5x  (15k and 10k resistors)
+  //#define BURST_CAM_PIN       36              //deprecated from rev. 4 board
+  //#define BURST_CAM_ALT       0               //deprecated from rev. 4 board
+  #define ANOMALY_ALARM_PIN   52
+  #define DEBUG_SERIAL        Serial
+  #define USE_WATCHDOG                          //automatically reboot the Arduino if it hangs
+  
+  #define DHTPIN 24                             // what digital pin we're connected to
+  
+  //ONLY USE ONE OF THESE, BELOW
+  #define DHTTYPE DHT11                         // DHT 11
+  //#define DHTTYPE DHT22                       // DHT 22  (AM2302), AM2321 | we recommend using the DHT22 / AM2302 for larger measurement range
+  //#define DHTTYPE DHT21                       // DHT 21 (AM2301)
   
 //  
 //------------------------------------------------------------------------------------------------------
@@ -109,19 +127,6 @@
                                                                 // List of variables/expressions for extra fields. Make empty if no such fields.  Always use comma at start of there are any such fields.
 #define SENTENCE_LENGTH      100                  // This is more than sufficient for the standard sentence.  Extend if needed; shorten if you are tight on memory.
 
-    /*
-            "$%s,%d,%02d:%02d:%02d,%s,%s,%05.5u,%d,%d,%d",
-            PAYLOAD_ID,
-            SentenceCounter,
-	    GPS.Hours, GPS.Minutes, GPS.Seconds,
-            LatitudeString,
-            LongitudeString,
-            GPS.Altitude,
-            (int)((GPS.Speed * 13) / 7),
-            GPS.Course,
-            GPS.Satellites);
-    */
-
 
 //------------------------------------------------------------------------------------------------------
 //
@@ -145,7 +150,7 @@ struct TGPS
   float Longitude, Latitude;
   long Altitude, AltitudeF;
   unsigned int Satellites;
-  String Timestamp, LaunchCardinal, Cardinal;
+  char* Timestamp;
   float LaunchLongitude, LaunchLatitude, LaunchDistance;
   unsigned int DateAge, HDOP, Age;
   int Speed, SpeedK, LaunchCourse, Course, Direction;
@@ -155,7 +160,7 @@ struct TGPS
 
 struct TRTC
 {
-  String timestamp;
+  char* timestamp;
   unsigned long unix;  
 } RTCO;
 
@@ -379,7 +384,6 @@ void loop(){
   #endif
   
 }
-
 
 int freeRam(void){
   extern int __heap_start, *__brkval; 

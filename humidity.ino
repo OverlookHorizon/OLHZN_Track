@@ -9,6 +9,14 @@ double dpc = -999;
 double dpf = -999;
 unsigned long checkDHT=0;
 
+char hChar[7];
+char cChar[7];
+char fChar[7];
+char hifChar[7];
+char hicChar[7];
+char dpcChar[7];
+char dpfChar[7];
+
 #ifdef DHTPIN
   #ifdef DHTTYPE
 
@@ -25,6 +33,9 @@ void readDHT() {
     h = dht.readHumidity();
     c = dht.readTemperature();
     f = dht.readTemperature(true);
+    dtostrf(h,3,2,hChar);
+    dtostrf(c,3,2,cChar);
+    dtostrf(f,3,2,fChar);
     if (isnan(h) || isnan(c) || isnan(f)) {
       h = -999;
       c = -999;
@@ -38,6 +49,10 @@ void readDHT() {
       hic = dht.computeHeatIndex(c, h, false);
       dpc = dewPointFast(c,h);
       dpf = cToF(dpc);
+      dtostrf(hif,3,2,hifChar);
+      dtostrf(hic,3,2,hicChar);
+      dtostrf(dpf,3,2,dpfChar);
+      dtostrf(dpc,3,2,dpcChar);
     }
     #if DHTTYPE == DHT11
       checkDHT = millis() + 1000L;        // readings only once every 1 second
@@ -55,8 +70,7 @@ void readDHT() {
 // reference (1) : http://wahiduddin.net/calc/density_algorithms.htm
 // reference (2) : http://www.colorado.edu/geography/weather_station/Geog_site/about.htm
 //
-double dewPoint(double celsius, double humidity)
-{
+double dewPoint(double celsius, double humidity){
   // (1) Saturation Vapor Pressure = ESGG(T)
   double RATIO = 373.15 / (273.15 + celsius);
   double RHS = -7.90298 * (RATIO - 1);
@@ -76,8 +90,7 @@ double dewPoint(double celsius, double humidity)
 // delta max = 0.6544 wrt dewPoint()
 // 6.9 x faster than dewPoint()
 // reference: http://en.wikipedia.org/wiki/Dew_point
-double dewPointFast(double celsius, double humidity)
-{
+double dewPointFast(double celsius, double humidity){
   double a = 17.271;
   double b = 237.7;
   double temp = (a * celsius) / (b + celsius) + log(humidity*0.01);
@@ -105,5 +118,27 @@ double readDPC(){
 }
 double readDPF(){
   return dpf;
+}
+
+char* readHTempCChar(){
+  return cChar;
+}
+char* readHTempFChar(){
+  return fChar;
+}
+char* readHumidChar(){
+  return hChar;
+}
+char* readHIFChar(){
+  return hifChar;
+}
+char* readHICChar(){
+  return hicChar;
+}
+char* readDPCChar(){
+  return dpcChar;
+}
+char* readDPFChar(){
+  return dpfChar;
 }
 

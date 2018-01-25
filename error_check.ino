@@ -60,14 +60,15 @@ void goodStart(){
 }
 
 
-void failure(String err){
+void failure(uint8_t errNo){
   //handle boot errors
+  //if something breaks or fails on initial boot, flash the led then reboot
   #ifdef DEBUG_SERIAL
     #ifdef USE_RTC
       DEBUG_SERIAL.println(RTC.now().unixtime());
     #endif
     DEBUG_SERIAL.print(F("ERROR ON DEVICE: "));
-    DEBUG_SERIAL.println(err);
+    DEBUG_SERIAL.println(errNo);
   #endif
   for(unsigned int i=0;i<20;i++){
     #ifdef USE_WATCHDOG

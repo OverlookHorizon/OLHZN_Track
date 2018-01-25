@@ -1,33 +1,36 @@
-char LatitudeString[16], LongitudeString[16], CRCString[8];
+char LatitudeStr[16], LongitudeStr[16];
 char printLineA[100];
-String dateTemp;
 
-String formatDateParam(unsigned int param){
-  dateTemp = String(param);
-  if(dateTemp.length()==1){
-    dateTemp = "0" + dateTemp;
-  }
-  return dateTemp;
+char *ftoa(char *a, double f, int precision){
+ long p[] = {0,10,100,1000,10000,100000,1000000,10000000,100000000};
+ 
+ char *ret = a;
+ long heiltal = (long)f;
+ itoa(heiltal, a, 10);
+ while (*a != '\0') a++;
+ *a++ = '.';
+ long desimal = abs((long)((f - heiltal) * p[precision]));
+ itoa(desimal, a, 10);
+ return ret;
 }
 
-int BuildSentence(char *TxLine, const char *PayloadID)
-{
+int BuildSentence(char *TxLine, const char *PayloadID){
     int Count, i, j;
     unsigned char c;
     unsigned int CRC, xPolynomial;
 	
     SentenceCounter++;
 	
-    dtostrf(GPS.Latitude, 7, 5, LatitudeString);
-    dtostrf(GPS.Longitude, 7, 5, LongitudeString);
+    dtostrf(GPS.Latitude, 7, 5, LatitudeStr);
+    dtostrf(GPS.Longitude, 7, 5, LongitudeStr);
 
     snprintf(TxLine,
             SENTENCE_LENGTH-6,
             "$$%s,%d,%s,%s,%d" /*EXTRA_FIELD_FORMAT*/,
             PayloadID,
             SentenceCounter,
-            LatitudeString,
-            LongitudeString,
+            LatitudeStr,
+            LongitudeStr,
             (int)GPS.Altitude
             //EXTRA_FIELD_LIST 
             );
@@ -37,8 +40,8 @@ int BuildSentence(char *TxLine, const char *PayloadID)
             PAYLOAD_ID,
             SentenceCounter,
 	    GPS.Hours, GPS.Minutes, GPS.Seconds,
-            LatitudeString,
-            LongitudeString,
+            LatitudeStr,
+            LongitudeStr,
             GPS.Altitude,
             (int)((GPS.Speed * 13) / 7),
             GPS.Course,

@@ -74,13 +74,10 @@ void allLEDoff(){
   #endif
 }
 
-void CheckLEDs(void)
-{
-  if (millis() >= NextLEDs)
-  {
+void CheckLEDs(void){
+  if (millis() >= NextLEDs){
     static byte Flash=0;
     
-    // This would normally be the only LED for status (i.e. no OK or WARN LEDs)
     if (GPS.AltitudeF > 1500){
       // All off
       if(last_status!=5){

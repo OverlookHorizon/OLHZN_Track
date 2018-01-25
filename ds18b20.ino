@@ -25,8 +25,7 @@ int GettingTemperature=0;
 OneWire oneWire(WIREBUS);                    // OneWire port
 DallasTemperature sensors(&oneWire);   // Pass oneWire reference to Dallas Temperature object
 
-void Setupds18b20(void)
-{
+void Setupds18b20(void){
   sensors.begin();
   // Grab a count of devices on the wire
   SensorCount = sensors.getDeviceCount();
@@ -36,7 +35,8 @@ void Setupds18b20(void)
   #endif
   #ifdef EXPECTED_SENSORS
     if(SensorCount!=EXPECTED_SENSORS){
-      //failure(F("WRONG SENSOR COUNT."));
+      //failure(501);
+      //don't really need this failure, but you can uncomment to fail if the wrong number of temperature sensors is detected
     }
   #endif
   for(int i=0;i<MAX_SENSORS;i++){
@@ -49,14 +49,10 @@ void Setupds18b20(void)
   }
 }
 
-void Checkds18b20(void)
-{
-  if (millis() >= CheckDS18B20s && getLogStarted() && !isSendingRTTY() && !isTX())
-  {
-    if (GettingTemperature)
-    {      
-      for (int i=0; i<SensorCount; i++)
-      {
+void Checkds18b20(void){
+  if (millis() >= CheckDS18B20s && getLogStarted() && !isSendingRTTY() && !isTX()){
+    if (GettingTemperature){      
+      for (int i=0; i<SensorCount; i++){
         DS18B20_Temperatures[i] = sensors.getTempFByIndex(i);
         #ifdef DEBUG_SERIAL  
           DEBUG_SERIAL.print(F("Temperature ")); 
@@ -67,9 +63,7 @@ void Checkds18b20(void)
         #endif
       }
       CheckDS18B20s = millis() + 10000L;
-    }
-    else
-    {
+    }else{
       sensors.requestTemperatures();          // Send the command to get temperature
       CheckDS18B20s = millis() + 1000L;        // Leave 1 second (takes 782ms) for readings to happen
     }

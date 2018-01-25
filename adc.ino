@@ -15,6 +15,9 @@ bool BAD_VOLTAGE = true;
 #ifdef A0_MULTIPLIER
 
 unsigned long CheckADCChannels = 0;
+char voltageHolder0[8];
+char voltageHolder1[8];
+char voltageHolder2[8];
 
 void SetupADC(void)
 {
@@ -46,8 +49,7 @@ void SetupADC(void)
   }
 }
 
-void CheckADC(void)
-{
+void CheckADC(void){
   if (millis() >= CheckADCChannels && !isTX()){
     #ifdef A0_MULTIPLIER
       BatteryVoltage[0] = ReadADC(A0, A0_MULTIPLIER);
@@ -62,8 +64,7 @@ void CheckADC(void)
   }
 }
 
-double ReadADC(int Pin, float Multiplier)
-{
+double ReadADC(int Pin, float Multiplier){
   int sensorValue = analogRead(Pin);
   double voltage = sensorValue * (5.0 / 1023.0);
   return (voltage * Multiplier);
@@ -72,10 +73,25 @@ double ReadADC(int Pin, float Multiplier)
 #endif
 
 double getVoltage(uint8_t x){
-  if(x<4){
+  if(x<3){
     return BatteryVoltage[x];
   }else{
     return 0;
   }
+}
+
+char* getVoltageChar(uint8_t x){
+  switch(x){
+    case 0:
+      dtostrf(BatteryVoltage[0],3,2,voltageHolder0);
+      return voltageHolder0;
+    case 1:
+      dtostrf(BatteryVoltage[1],3,2,voltageHolder1);
+      return voltageHolder1;
+    case 2:
+      dtostrf(BatteryVoltage[2],3,2,voltageHolder2);
+      return voltageHolder2;
+  }
+  return 0;
 }
 

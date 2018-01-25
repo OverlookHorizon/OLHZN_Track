@@ -1,16 +1,6 @@
-/* ========================================================================== */
-/*   gps.ino                                                                  */
-/*                                                                            */
-/*   Serial and i2c code for ublox on AVR                                     */
-/*                                                                            */
-/*                                                                            */
-/*                                                                            */
-/* ========================================================================== */
-
 #include <TinyGPS++.h>
 
 TinyGPSPlus gps;
-byte RequiredFlightMode=0;
 byte LastCommand1=0;
 byte LastCommand2=0;
 unsigned long lastReadingTime = 0;
@@ -18,10 +8,20 @@ unsigned long lastAltitude = 0;
 float ascentRateMS = 0;
 float ascentRateFT = 0;
 float ascentRateMPH = 0;
+char ascentRateMSChar[10];
+char ascentRateFTChar[10];
+char ascentRateMPHChar[10];
+char latitudeChar[12];
+char longitudeChar[12];
+char launchLatitudeChar[12];
+char launchLongitudeChar[12];
+char launchDistanceChar[10];
+char gps_time_buffer[20];
+char* cardinal_direction;
+char* launch_cardinal_direction;
 
 
-char Hex(char Character)
-{
+char Hex(char Character){
   char HexTable[] = "0123456789ABCDEF";
   
   return HexTable[Character];
@@ -34,24 +34,16 @@ void SetupGPS(void){
     #endif
 }
 
-int GPSAvailable(void)
-{
-  return GPS_SERIAL.available();
-}
-
-void ReadGPS(void)
-{
+void ReadGPS(void){
   while (GPS_SERIAL.available()){   
     gps.encode(GPS_SERIAL.read());
   }
   
-//  #ifdef DEBUG_SERIAL  
-//    DEBUG_SERIAL.println(gps.location.rawLng().billionths);
-//  #endif
-
   GPS.Satellites = (gps.satellites.isValid()) ? gps.satellites.value() : 0;
   GPS.Longitude = (float)(gps.location.isValid()) ? gps.location.lng() : 0;
   GPS.Latitude = (float)(gps.location.isValid()) ? gps.location.lat() : 0;
+  dtostrf(GPS.Latitude,2,6,latitudeChar);
+  dtostrf(GPS.Longitude,2,6,longitudeChar);
   GPS.Altitude = (gps.altitude.isValid()) ? gps.altitude.meters() : 0;
   GPS.AltitudeF = (gps.altitude.isValid()) ? gps.altitude.feet() : 0;
   GPS.Hours = (gps.time.isValid()) ? gps.time.hour() : 0;
@@ -61,24 +53,32 @@ void ReadGPS(void)
   GPS.SpeedK = (gps.speed.isValid()) ? gps.speed.kmph() : 0;
   GPS.Direction = (gps.course.isValid()) ? gps.course.value() : 0;
   GPS.Course = (gps.course.isValid()) ? gps.course.deg() : 0;
-  GPS.Cardinal = (gps.course.isValid()) ? TinyGPSPlus::cardinal(gps.course.value()) : "";
-
-  GPS.Timestamp = (gps.date.isValid()) ? formatDateParam(gps.date.year()) + "-" + formatDateParam(gps.date.month()) + "-" + formatDateParam(gps.date.day()) + " " + formatDateParam(gps.time.hour()) + ":" + formatDateParam(gps.time.minute()) + ":" + formatDateParam(gps.time.second()) : "";
+  if(gps.course.isValid()){
+    cardinal_direction = TinyGPSPlus::cardinal(gps.course.value());
+  }
+  
+  if(gps.date.isValid()){
+    sprintf(gps_time_buffer,"%04u-%02u-%02u %02u:%02u:%02u", gps.date.year(),gps.date.month(),gps.date.day(),gps.time.hour(),gps.time.minute(),gps.time.second());
+  }
+  GPS.Timestamp = gps_time_buffer;
   GPS.DateAge = (gps.date.isValid()) ? gps.date.age() : 0;
   GPS.HDOP = (gps.hdop.isValid()) ? gps.hdop.value() : 0;
   GPS.Age = (gps.location.isValid()) ? gps.location.age() : 0;
 
-  if(gps.location.isValid()){
-//    wdt_enable(WDTO_2S);
-  }
-
   if(gps.location.isValid() && GPS.LaunchLatitude==0){
+      //TODO: log the launch latitude to the SD card for reuse in case the Arduino reboots mid-flight
       GPS.LaunchLatitude = gps.location.lat();
       GPS.LaunchLongitude = gps.location.lng();
+      dtostrf(GPS.LaunchLatitude,2,6,launchLatitudeChar);
+      dtostrf(GPS.LaunchLongitude,2,6,launchLongitudeChar);
   }else if(gps.location.isValid() && GPS.LaunchLatitude!=0){
       GPS.LaunchDistance = kmToMi(TinyGPSPlus::distanceBetween(gps.location.lat(),gps.location.lng(),GPS.LaunchLatitude,GPS.LaunchLongitude) / 1000);
       GPS.LaunchCourse = TinyGPSPlus::courseTo(gps.location.lat(),gps.location.lng(),GPS.LaunchLatitude,GPS.LaunchLongitude);
-      GPS.LaunchCardinal = TinyGPSPlus::cardinal(GPS.LaunchCourse);
+      //GPS.LaunchCardinal = TinyGPSPlus::cardinal(GPS.LaunchCourse);
+      //strncpy(launch_cardinal_direction,TinyGPSPlus::cardinal(GPS.LaunchCourse),3);      
+      //launch_cardinal_direction[3] = '\0';        //guarding for null terminated strings
+      launch_cardinal_direction = TinyGPSPlus::cardinal(GPS.LaunchCourse);
+      dtostrf(GPS.LaunchDistance,4,2,launchDistanceChar);
   }
   
   if (millis() > 5000 && gps.charsProcessed() > 10){   
@@ -91,7 +91,7 @@ void ReadGPS(void)
       GPS.Lock = 1;    
   }else{
     if(millis() > 5000 && gps.charsProcessed() < 10){
-      failure(F("GPS WIRING"));
+      failure(502);
     }
     GPS.Lock = 0;
     
@@ -133,27 +133,25 @@ void SendUBX(unsigned char *Message, int Length){
     GPS_SERIAL.write(Message[i]);
   }
 }
+
 double kmToMi(double km){
   return (km * 0.621371);
 }
 
-float getAscentRate(){
+void calculateAscentRate(){
   if(lastReadingTime>0 && GPS.Altitude!=lastAltitude){
-//    DEBUG_SERIAL.print(F("ascentRateMS = ("));
-//    DEBUG_SERIAL.print(GPS.Altitude);
-//    DEBUG_SERIAL.print(F(" - "));
-//    DEBUG_SERIAL.print(lastAltitude);
-//    DEBUG_SERIAL.print(F(") / (("));
-//    DEBUG_SERIAL.print(millis());
-//    DEBUG_SERIAL.print(F(" - "));
-//    DEBUG_SERIAL.print(lastReadingTime);
-//    DEBUG_SERIAL.println(F(")/1000)"));
     ascentRateMS = (float)((float)GPS.Altitude - (float)lastAltitude) / (((float)millis()-(float)lastReadingTime)/1000);
   }
   ascentRateFT = ascentRateMS*3.28084;
   ascentRateMPH = ascentRateMS*2.23694;
+  dtostrf(ascentRateMS,3,2,ascentRateMSChar);
+  dtostrf(ascentRateFT,3,2,ascentRateFTChar);
+  dtostrf(ascentRateMPH,3,2,ascentRateMPHChar);
   lastReadingTime = millis();
-  lastAltitude = GPS.Altitude;
+  lastAltitude = GPS.Altitude;  
+}
+
+float getAscentRate(){
   return ascentRateMS;
 }
 
@@ -165,24 +163,47 @@ float getAscentRateMPH(){
   return ascentRateMPH;
 }
 
-void PollGPSTime(void)
-{
-  ReadGPS();
+char* getAscentRateMSChar(){
+  return ascentRateMSChar;
 }
 
-void PollGPSLock(void)
-{
-  ReadGPS();
+char* getAscentRateFTChar(){
+  return ascentRateFTChar;
 }
 
-void PollGPSPosition(void)
-{
-  ReadGPS();
+char* getAscentRateMPHChar(){
+  return ascentRateMPHChar;
 }
   
-void CheckGPS(void)
-{
+void CheckGPS(void){
   ReadGPS();
 }
 
+char* getLatitudeChar(){
+  return latitudeChar;
+}
+
+char* getLongitudeChar(){
+  return longitudeChar;
+}
+
+char* getLaunchLatitudeChar(){
+  return longitudeChar;
+}
+
+char* getLaunchLongitudeChar(){
+  return longitudeChar;
+}
+
+char* getLaunchDistanceChar(){
+  return launchDistanceChar;
+}
+
+char* getCardinalDirection(){
+  return cardinal_direction;
+}
+
+char* getLaunchCardinalDirection(){
+  return launch_cardinal_direction;
+}
 

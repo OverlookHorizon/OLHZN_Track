@@ -42,7 +42,7 @@
 char * APRS_SYMBOL = "O";
 uint8_t APRS_SSID = 11;
 
-String lastTransmissionTime;
+char lastTransmissionTime[20];
 
 // Our variables
 
@@ -92,23 +92,8 @@ boolean isTX(){
 void CheckAPRS(void){
   if ((millis() >= NextAPRS) && (GPS.Satellites >= 4 || getLogStarted()) && (_txlen == 0)){
 
-    if(GPS.AltitudeF>0 && GPS.AltitudeF<990 && !hitAltitude()){
-      APRS_SSID = 9;
-      APRS_SYMBOL = ">";
-    }else{
-      APRS_SSID = 11;
-      APRS_SYMBOL = "O";
-    }
-
-      ////////////////////////////////////////////////////////////////////////////
-      //FLIGHT DAY SETTINGS!!
-      //COMMENT OUT BELOW FOR TESTING
-      //UNCOMMENT BELOW FOR FLIGHT      
-      //
-      APRS_SSID = 11;
-      APRS_SYMBOL = "O";
-      //      
-      ////////////////////////////////////////////////////////////////////////////
+      APRS_SSID = 11;         //set APRS_SSID to 9 for testing mode
+      APRS_SYMBOL = "O";      //set APRS_SYMBOL to > for car icon
     
       Seconds = 60;
       
@@ -120,8 +105,8 @@ void CheckAPRS(void){
       
       if (aprs_mode == 0){   
         // Normal transmission - wait another minute or whatever
-        if(APRS_SSID!=11){          
-          //testing with the car
+        if(APRS_SSID!=11 && APRS_SSID!=12){          
+          //testing mode
           Seconds = random(25,36);
         }else if(GPS.AltitudeF<3500 && GPS.Speed > 6){
           //really low altitude and still moving
@@ -155,8 +140,9 @@ void CheckAPRS(void){
         DEBUG_SERIAL.println(F(" seconds"));
       #endif
         
-      NextAPRS = millis() + (Seconds * 1000L);
-      lastTransmissionTime =  RTCO.timestamp.c_str();
+      NextAPRS = millis() + (Seconds * 1000L);  
+      strncpy(lastTransmissionTime,RTCO.timestamp,19);
+      lastTransmissionTime[19] = '\0';        //guarding for null terminated strings
       #ifdef RTTY_INTERVAL
         if(millis() - getLastRTTY() >= (getRTTYInterval()*1000L)){
           #ifdef DEBUG_SERIAL          
@@ -173,8 +159,7 @@ void CheckAPRS(void){
   }
 }
 
-void ax25_frame(const char *scallsign, const char sssid, const char *dcallsign, const char dssid, const char ttl1, const char ttl2, const char *data, ...)
-{
+void ax25_frame(const char *scallsign, const char sssid, const char *dcallsign, const char dssid, const char ttl1, const char ttl2, const char *data, ...){
   static uint8_t frame[100];
   uint8_t *s;
   uint16_t x;
@@ -227,8 +212,7 @@ void ax25_frame(const char *scallsign, const char sssid, const char *dcallsign, 
 #endif
 }
 
-void tx_aprs(void)
-{
+void tx_aprs(void){
   char slat[5];
   char slng[5];
   char stlm[75];
@@ -275,8 +259,6 @@ ax25_base91enc(ptr, 2, (getVoltage(0)*100));
 
     
   if (aprs_mode == 0){
-//    DEBUG_SERIAL.println(GPS.Latitude,6);
-//    DEBUG_SERIAL.println(aprs_lat);
     /* Construct the compressed telemetry format */
     ax25_frame(
       APRS_CALLSIGN, APRS_SSID,
@@ -361,8 +343,7 @@ ax25_base91enc(ptr, 2, (getVoltage(0)*100));
 #endif  
 }
 
-ISR(TIMER2_OVF_vect)
-{
+ISR(TIMER2_OVF_vect){
 
   static uint16_t phase  = 0;
   static uint16_t step   = PHASE_DELTA_1200;
@@ -454,8 +435,7 @@ ISR(TIMER2_OVF_vect)
 
   byte >>= 1;
 }
-char *ax25_base91enc(char *s, uint8_t n, uint32_t v)
-{
+char *ax25_base91enc(char *s, uint8_t n, uint32_t v){
   /* Creates a Base-91 representation of the value in v in the string */
   /* pointed to by s, n-characters long. String length should be n+1. */
 
@@ -468,8 +448,7 @@ char *ax25_base91enc(char *s, uint8_t n, uint32_t v)
   return(s);
 }
 
-static uint8_t *_ax25_callsign(uint8_t *s, const char *callsign, const char ssid)
-{
+static uint8_t *_ax25_callsign(uint8_t *s, const char *callsign, const char ssid){
   char i;
   for(i = 0; i < 6; i++)
   {
@@ -488,7 +467,7 @@ unsigned long getNextAPRS(){
   return ((NextAPRS - millis())/1000);
 }
 
-String getLastTXtime(){
+char* getLastTXtime(){
   return lastTransmissionTime;
 }
 
