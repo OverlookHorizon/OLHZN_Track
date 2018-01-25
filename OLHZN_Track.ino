@@ -65,7 +65,7 @@
   #define WIREBUS             6
   #define EXPECTED_SENSORS    2
   #define BUZZER              A2
-  #define BUZZER_ALTITUDE     2000              //value in feet.  Should be about 500 feet above your expected landing elevation. About 2000 for OLHZN flights. TODO: fix the buzzer!
+  #define BUZZER_ALTITUDE     2000              //value in feet.  Should be about 500 feet above your expected landing elevation. About 2000 for OLHZN flights.
   //#define CANON_PIN           4               //deprecated from rev. 2 board
   #define USE_RTC
   #define LOG_DATA
@@ -79,11 +79,11 @@
   #define DEBUG_SERIAL        Serial
   #define USE_WATCHDOG                          //automatically reboot the Arduino if it hangs
   
-  #define DHTPIN 24                             // what digital pin the humidity sensor is connected to. added in rev. 5
+  #define DHTPIN 24                             // what digital pin we're connected to
   
   //ONLY USE ONE OF THESE, BELOW
-  //#define DHTTYPE DHT11                       // DHT 11
-  #define DHTTYPE DHT22                         // DHT 22  (AM2302), AM2321 | we recommend using the DHT22 / AM2302 for larger measurement range
+  #define DHTTYPE DHT11                         // DHT 11
+  //#define DHTTYPE DHT22                       // DHT 22  (AM2302), AM2321 | we recommend using the DHT22 / AM2302 for larger measurement range
   //#define DHTTYPE DHT21                       // DHT 21 (AM2301)
   
 //  
