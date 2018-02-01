@@ -7,11 +7,11 @@ char time_buffer[20];
 void SetupRTC(){  
   RTC.begin();
   if (! RTC.isrunning())
-    RTC.adjust(DateTime(__DATE__, __TIME__));
+    RTC.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
     
   if(RTC.now().year()!=curYear){
-    RTC.adjust(DateTime(__DATE__, __TIME__));
+    RTC.adjust(DateTime(F(__DATE__), F(__TIME__)));
     if(RTC.now().year()!=curYear){
       #ifdef DEBUG_SERIAL  
         DEBUG_SERIAL.print(F("RTC BAD CLOCK YEAR: "));
@@ -19,7 +19,7 @@ void SetupRTC(){
         DEBUG_SERIAL.print(F(" != Current Static Year: "));
         DEBUG_SERIAL.println(curYear);
       #endif
-      failure(508);
+      failure(8);
     }
   }
 }

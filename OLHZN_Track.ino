@@ -15,45 +15,49 @@
  * DHT.h
  * SFE_BMP180.h
  * SD.h
+ * Wire.h
+ * SPI.h
+ * Adafruit_Sensor.h
+ * Adafruit_BME280.h
  * 
  * FAILURE ERROR CODES
  * In the event of an initial boot failure the WARN light will flash, the Piezo will beep and the Serial
  * output will print a 3 digit error code.  Below are the codes and their meaning:
  * 
- * 501: Number of temperature sensors detected does not equal the number of expected sensors
- * 502: Bad GPS wiring. Not receiving data from GPS chip.
- * 503: Bad BMP180 wiring. Not communicating with BMP180 chip.
- * 504: Unable to retrieve pressure measurement from BMP180
- * 505: Unable to start a pressure measurement with the BMP180
- * 506: Unable to retrieve temperature measurement from BMP180
- * 507: Unable to start a temperature measurement with the BMP180
- * 508: Bad or misconfigured RTC clock
- * 509: Missing or corrupt SD card or SD card shield
- * 510: SD Card file opening failed when writing header row
+ * 1: Number of temperature sensors detected does not equal the number of expected sensors
+ * 2: Bad GPS wiring. Not receiving data from GPS chip.
+ * 3: Bad BMP180 wiring. Not communicating with BMP180 chip.
+ * 4: Unable to retrieve pressure measurement from BMP180
+ * 5: Unable to start a pressure measurement with the BMP180
+ * 6: Unable to retrieve temperature measurement from BMP180
+ * 7: Unable to start a temperature measurement with the BMP180
+ * 8: Bad or misconfigured RTC clock
+ * 9: Missing or corrupt SD card or SD card shield
+ * 10: SD Card file opening failed when writing header row
  * 
  */ 
 //------------------------------------------------------------------------------------------------------
 // CONFIGURATION SECTION.
 
   // RTTY settings
-//  #define RTTY_PAYLOAD_ID   "CHANGEME"          // Do not use spaces.
+//  #define RTTY_PAYLOAD_ID   "CHANGEME"        // Do not use spaces.
 //  #define RTTY_FREQUENCY    144.390           // For devices that are frequency-agile
 //  #define RTTY_BAUD         100               // Comment out if not using RTTY
 //  #define RTTY_SHIFT        170               // Only used on boards where PWM is used for RTTY.
 //  #define RTTY_PWM            1
-//  #define RTTY_ENABLE         A3
-//  #define RTTY_DATA           5
-//  #define RTTY_INTERVAL       45 //seconds
-//  #define RTTY_ATTEMPTS        3
+//  #define RTTY_ENABLE         A3              //PTT to enable radio
+//  #define RTTY_DATA           5               //data output
+//  #define RTTY_INTERVAL       45 //seconds    //time between transmission sessions
+//  #define RTTY_ATTEMPTS        3              //number of times to repeat the broadcast, per transmission session
 
   // APRS settings
   #define APRS_CALLSIGN    "CHANGEME"            // Max 6 characters
-  #define APRS_PATH_ALTITUDE   2000              // Below this altitude, ** in metres **, path will switch to WIDE1-1, WIDE2-1.  Above it will be or path or WIDE2-1 (see below)
-  #define APRS_HIGH_USE_WIDE2    1               // 1 means WIDE2-1 is used at altitude; 0 means no path is used
+  #define APRS_PATH_ALTITUDE   2000            // Below this altitude, ** in metres **, path will switch to WIDE1-1, WIDE2-1.  Above it will be or path or WIDE2-1 (see below)
+  #define APRS_HIGH_USE_WIDE2    1             // 1 means WIDE2-1 is used at altitude; 0 means no path is used
   
-  #define APRS_PRE_EMPHASIS                      // Comment out to disable 3dB pre-emphasis.
+  #define APRS_PRE_EMPHASIS                    // Comment out to disable 3dB pre-emphasis.
   
-  #define APRS_COMMENT     "OverlookHorizon.com"
+  #define APRS_COMMENT     "OverlookHorizon.com"    //enter whatever you want (within reason)
   #define APRS_TELEM_INTERVAL  5                // How often to send telemetry packets.... every X transmissions.  Comment out to disable  
   #define SD_WRITE_TIME       1000
   #define LED_TX              22
@@ -69,7 +73,12 @@
   //#define CANON_PIN           4               //deprecated from rev. 2 board
   #define USE_RTC
   #define LOG_DATA
+  
   #define LOG_PRESSURE
+  //#define PRESSURE_TYPE       BMP180          //you can use either the BMP180 breakout board
+  #define PRESSURE_TYPE       BME280            //or the BME280 breakout board... this is new (2018-01-31). 
+                                                //We like the BME280 better since it also reads humidity.
+                                                
   #define A0_MULTIPLIER        6                //rev. 5 board is 6x    (10k and 2k resistors)
   #define A1_MULTIPLIER        2.5              //rev. 5 board is 2.5x  (15k and 10k resistors)
   #define A6_MULTIPLIER        2.5              //rev. 5 board is 2.5x  (15k and 10k resistors)
@@ -128,9 +137,7 @@
 //
 //  Globals
 
-struct TBinaryPacket
-
-{
+struct TBinaryPacket{
 	uint8_t 	PayloadIDs;
 	uint16_t	Counter;
 	uint16_t	BiSeconds;
@@ -139,8 +146,7 @@ struct TBinaryPacket
 	int32_t  	Altitude;
 };  //  __attribute__ ((packed));
 
-struct TGPS
-{
+struct TGPS{
   int Hours, Minutes, Seconds;
   unsigned long SecondsInDay;					// Time in seconds since midnight
   float Longitude, Latitude;
@@ -154,8 +160,7 @@ struct TGPS
   float Pressure;
 } GPS;
 
-struct TRTC
-{
+struct TRTC{
   char* timestamp;
   unsigned long unix;  
 } RTCO;

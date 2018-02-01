@@ -35,7 +35,7 @@ void Setupds18b20(void){
   #endif
   #ifdef EXPECTED_SENSORS
     if(SensorCount!=EXPECTED_SENSORS){
-      //failure(501);
+      //failure(1);
       //don't really need this failure, but you can uncomment to fail if the wrong number of temperature sensors is detected
     }
   #endif

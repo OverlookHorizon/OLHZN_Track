@@ -3,7 +3,7 @@
 void goodStart(){
   #if defined(BUZZER) && defined(LED_WARN) && defined(LED_OK)
     //these are all the systems we expect to be online at startup
-    #if !BAD_VOLTAGE && defined(APRS_ENABLE) && defined(APRS_DATA) && defined(GPS_SERIAL) && defined(WIREBUS) && defined(EXPECTED_SENSORS) && defined(BUZZER_ALTITUDE) && defined(USE_RTC) && defined(LOG_DATA) && defined(LOG_PRESSURE) && defined(APRS_TELEM_INTERVAL)
+    #if !BAD_VOLTAGE && defined(APRS_ENABLE) && defined(APRS_DATA) && defined(GPS_SERIAL) && defined(WIREBUS) && defined(EXPECTED_SENSORS) && defined(BUZZER_ALTITUDE) && defined(USE_RTC) && defined(LOG_DATA) && defined(PRESSURE_TYPE) && defined(LOG_PRESSURE) && defined(APRS_TELEM_INTERVAL)
         //&& defined(CANON_PIN)  removed 2016-05-09
         //&& defined(RTTY_PWM) && defined(RTTY_ENABLE) && defined(RTTY_DATA) && defined(RTTY_INTERVAL) && defined(RTTY_ATTEMPTS)   removed 2017-03-24
         //&& defined(DEBUG_SERIAL) removed 2018-01-25

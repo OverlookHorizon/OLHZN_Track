@@ -15,18 +15,18 @@ File altFile;
 float msrate, ftrate, mphrate;
 char alt_filename[15];
 char boot_filename[15];
-char sdLine[600];
+char sdLine[800];
 char elapsedTime[12];
 unsigned long last_sd_write = 0;
 boolean anomaly_on = true;
 boolean needs_header = true;
 
-void SetupSD(){
-  pinMode(SS, OUTPUT);   
+void SetupSD(){  
+  pinMode(SS, OUTPUT);   //keep the hardware SS pin (53 on Mega) set to output or the SD library won't work
   
   SdFile::dateTimeCallback(dateTime); 
   if (!SD.begin(10, 11, 12, 13)) {
-    failure(509);
+    failure(9);
   }
   snprintf(filename,12,"log.csv");
 
@@ -54,7 +54,7 @@ void SetupSD(){
   myFile = SD.open(filename, FILE_WRITE);  
   if(needs_header){
     if (myFile) {
-      myFile.println(F("Elapsed,Onboard Timestamp,Unix Timestamp,Satellites,GPS Timestamp,GPS Date Age,HDOP,Latitude,Longitude,GPS Age,Launch Latitude,Launch Longitude,Distance to Launch Site (mi),Course to Launch Site,Cardinal to Launch Site,Altitude (m),Altitude (ft),Course,Cardinal,Speed (kmph),Speed (mph),Temp Sensor 1,Temp Sensor 2,Internal Temp Sensor (c),Relative Altitude (m), Relative Altitude (ft),Baseline Pressure (mb),Pressure (mb),Humidity (%),Humidity Temp (c),Humidity Temp (f),Heat Index (f),Heat Index (c),Dew Point (c),Dew Point (f),Free RAM,Battery Voltage,Camera Voltage 1,Camera Voltage 2,Burst Cam,Hit Altitude,Buzzer On,Anomaly,Ascent Rate (m/s),Ascent Rate (ft/s),Ascent Rate (mph),Last Transmission,Next TX (s)"));
+      myFile.println(F("Elapsed,Onboard Timestamp,Unix Timestamp,Satellites,GPS Timestamp,GPS Date Age,HDOP,Latitude,Longitude,GPS Age,Launch Latitude,Launch Longitude,Distance to Launch Site (mi),Course to Launch Site,Cardinal to Launch Site,Altitude (m),Altitude (ft),Course,Cardinal,Speed (kmph),Speed (mph),Temp Sensor 1,Temp Sensor 2,BME Temp Sensor (F),BME Humidity %,BME Dew Point (F),BMP Altitude (m),BMP Altitude (ft),Baseline Pressure (mb),Pressure (mb),Humidity (%),Humidity Temp (c),Humidity Temp (f),Heat Index (f),Heat Index (c),Dew Point (c),Dew Point (f),Free RAM,Battery Voltage,Camera Voltage 1,Camera Voltage 2,Burst Cam,Hit Altitude,Buzzer On,Anomaly,Ascent Rate (m/s),Ascent Rate (ft/s),Ascent Rate (mph),Last Transmission,Next TX (s)"));
       myFile.close();
     }else{
       failure(510);
@@ -85,7 +85,7 @@ void CheckSD(){
       if(myFile){        
         snprintf(sdLine,
                   600,
-                  "%s,%s,%lu,%u,%s,%u,%u,%s,%s,%u,%s,%s,%s,%d,%s,%lu,%lu,%d,%s,%u,%u,%d,%d,%d,%d,%d,%d,%d,%s,%s,%s,%s,%s,%s,%s,%d,%s,%s,%s,%u,%u,%u,%u,%s,%s,%s,%s,%lu",
+                  "%s,%s,%lu,%u,%s,%u,%u,%s,%s,%u,%s,%s,%s,%d,%s,%lu,%lu,%d,%s,%u,%u,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%s,%s,%s,%s,%s,%s,%d,%s,%s,%s,%u,%u,%u,%u,%s,%s,%s,%s,%lu",
                   elapsedTime,
                   RTCO.timestamp,
                   RTCO.unix,
@@ -110,10 +110,12 @@ void CheckSD(){
                   (int)DS18B20_Temperatures[0],
                   (int)DS18B20_Temperatures[1],
                   (int)cToF(tempFromPressure),
-                  (int)getRelativeAltitude(),
-                  (int)getRelativeAltitudeF(),
-                  (int)baselinePressure,
-                  (int)tempPressure[1],
+                  (int)getHumidityRead(),       
+                  (int)cToF(getBMEDewPoint()),        
+                  (int)getBMPAltitude(),
+                  (int)getBMPAltitudeF(),
+                  (int)getBaselinePressure(),
+                  (int)getPressureRead(),
                   readHumidChar(),
                   readHTempCChar(),
                   readHTempFChar(),

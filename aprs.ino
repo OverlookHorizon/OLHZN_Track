@@ -92,8 +92,8 @@ boolean isTX(){
 void CheckAPRS(void){
   if ((millis() >= NextAPRS) && (GPS.Satellites >= 4 || getLogStarted()) && (_txlen == 0)){
 
-      APRS_SSID = 11;         //set APRS_SSID to 9 for testing mode
-      APRS_SYMBOL = "O";      //set APRS_SYMBOL to > for car icon
+      APRS_SSID = 11;         //set APRS_SSID to 9 for testing mode, 11 (or 12) for flight mode
+      APRS_SYMBOL = "O";      //set APRS_SYMBOL to > for car icon, O for flight mode
     
       Seconds = 60;
       
@@ -228,7 +228,7 @@ void tx_aprs(void){
   if(GPS.Satellites>=3){
     aprs_alt = GPS.Altitude * 32808 / 10000;
   }else{
-    aprs_alt = getRelativeAltitude() * 32808 / 10000;
+    aprs_alt = getBMPAltitude() * 32808 / 10000;
   }
   
   if (GPS.Altitude > APRS_PATH_ALTITUDE)
@@ -250,9 +250,13 @@ void tx_aprs(void){
 #ifdef WIREBUS  
   ax25_base91enc(ptr, 2, (int)DS18B20_Temperatures[0] + 100);
   ptr += 2;
-  ax25_base91enc(ptr, 2, (int)cToF(getTempFromPressure()) + 100);
-  ptr += 2;
   ax25_base91enc(ptr, 2, (int)DS18B20_Temperatures[1] + 100);
+  ptr += 2;
+  #ifdef DHTPIN
+    ax25_base91enc(ptr, 2, (int)readHumid() + 100);
+  #else
+    ax25_base91enc(ptr, 2, (int)getHumidityRead() + 100);
+  #endif
   ptr += 2;
 #endif
 ax25_base91enc(ptr, 2, (getVoltage(0)*100));  
@@ -293,12 +297,12 @@ ax25_base91enc(ptr, 2, (getVoltage(0)*100));
   #define APRS_UNIT2   ",deg.F"
   #define APRS_EQNS2   ",0,1,-100"
   
-  #define APRS_PARM3   ",Onboard"
+  #define APRS_PARM3   ",Internal"
   #define APRS_UNIT3   ",deg.F"
   #define APRS_EQNS3   ",0,1,-100"
 
-  #define APRS_PARM4   ",Internal"
-  #define APRS_UNIT4   ",deg.F"
+  #define APRS_PARM4   ",Humidity"
+  #define APRS_UNIT4   ",pct"
   #define APRS_EQNS4   ",0,1,-100"
   
   #define APRS_PARM5   ",Battery"

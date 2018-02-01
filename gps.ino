@@ -91,7 +91,7 @@ void ReadGPS(void){
       GPS.Lock = 1;    
   }else{
     if(millis() > 5000 && gps.charsProcessed() < 10){
-      failure(502);
+      failure(2);
     }
     GPS.Lock = 0;
     
@@ -142,7 +142,7 @@ void calculateAscentRate(){
   if(lastReadingTime>0 && GPS.Altitude!=lastAltitude){
     ascentRateMS = (float)((float)GPS.Altitude - (float)lastAltitude) / (((float)millis()-(float)lastReadingTime)/1000);
   }
-  ascentRateFT = ascentRateMS*3.28084;
+  ascentRateFT = mToF(ascentRateMS);
   ascentRateMPH = ascentRateMS*2.23694;
   dtostrf(ascentRateMS,3,2,ascentRateMSChar);
   dtostrf(ascentRateFT,3,2,ascentRateFTChar);
