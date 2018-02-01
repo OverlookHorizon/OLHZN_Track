@@ -59,32 +59,33 @@
   
   #define APRS_COMMENT     "OverlookHorizon.com"    //enter whatever you want (within reason)
   #define APRS_TELEM_INTERVAL  5                // How often to send telemetry packets.... every X transmissions.  Comment out to disable  
-  #define SD_WRITE_TIME       1000
-  #define LED_TX              22
-  #define LED_OK              8
-  #define LED_WARN            7
-  #define APRS_ENABLE         A3
-  #define APRS_DATA           9         
+  #define SD_WRITE_TIME       1000              //how often to write to the SD card in milliseconds... don't go less than 1000, it's not a good idea.
+  #define LED_TX              22                //on when HX1 is transmitting
+  #define LED_OK              8                 //solid when all systems good. Flashing while acquiring GPS signal.
+  #define LED_WARN            7                 //off when all systems good. Flashing solo when major error. Flashing with TX and OK when acquiring GPS signal.
+  #define APRS_ENABLE         A3                //PTT for the HX1
+  #define APRS_DATA           9                 
   #define GPS_SERIAL          Serial3
-  #define WIREBUS             6
-  #define EXPECTED_SENSORS    2
-  #define BUZZER              A2
+  #define WIREBUS             6                 //for reading temperature sensors
+  #define EXPECTED_SENSORS    2                 //number of temperature sensors you intend to use
+  #define BUZZER              A2                //piezo. beeps while acquiring GPS signal.  Supposed to beep during landing, but this part is broken right now.
   #define BUZZER_ALTITUDE     2000              //value in feet.  Should be about 500 feet above your expected landing elevation. About 2000 for OLHZN flights. TODO: fix the buzzer!
   //#define CANON_PIN           4               //deprecated from rev. 2 board
-  #define USE_RTC
-  #define LOG_DATA
+  #define USE_RTC                               //whether or not to use the RTC clock onboard a data logging shield
+  #define LOG_DATA                              //whether or not to log data to an SD card.  If you turn this off, the watchdog timer may reboot the system repeatedly so turn it off or add a reset somewhere else.
   
-  #define LOG_PRESSURE
-  //#define PRESSURE_TYPE       BMP180          //you can use either the BMP180 breakout board
+  #define LOG_PRESSURE                          //whether to use the BMP180 or BME280 breakout boards
+  //#define PRESSURE_TYPE       BMP180          //type of pressure breakout board. you can use either the BMP180 breakout board
   #define PRESSURE_TYPE       BME280            //or the BME280 breakout board... this is new (2018-01-31). 
                                                 //We like the BME280 better since it also reads humidity.
                                                 
-  #define A0_MULTIPLIER        6                //rev. 5 board is 6x    (10k and 2k resistors)
-  #define A1_MULTIPLIER        2.5              //rev. 5 board is 2.5x  (15k and 10k resistors)
-  #define A6_MULTIPLIER        2.5              //rev. 5 board is 2.5x  (15k and 10k resistors)
+  #define A0_MULTIPLIER        6                //voltage multiplier for main arduino battery. rev. 5 board is 6x    (10k and 2k resistors)
+  #define A1_MULTIPLIER        2.5              //voltage multiplier for camera 1 battery. rev. 5 board is 2.5x  (15k and 10k resistors)
+  #define A6_MULTIPLIER        2.5              //voltage multiplier for camera 2 battery. rev. 5 board is 2.5x  (15k and 10k resistors)
+  #define A7_MULTIPLIER        2.5              //voltage multiplier for camera 3 battery. not actually connected on revision 5 board. coming soon via revision 6.
   //#define BURST_CAM_PIN       36              //deprecated from rev. 4 board
   //#define BURST_CAM_ALT       0               //deprecated from rev. 4 board
-  #define ANOMALY_ALARM_PIN   52
+  #define ANOMALY_ALARM_PIN   52                //LiPo low voltage alarm. Used to report anomalies. GND to GND, PWR to LiPo alarm pin 2.
   //#define DEBUG_SERIAL        Serial          //uncomment for debugging via the serial terminal
   #define USE_WATCHDOG                          //automatically reboot the Arduino if it hangs
   
