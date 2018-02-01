@@ -11,7 +11,7 @@ You will need to purchase the following parts to assemble this circuit board:
 - (**1x**) 5mm LED Green: http://amzn.to/2Dw0E0K
 - (**2x**) 0.1uF 50V Ceramic Capacitor: http://amzn.to/2Dxqy4g
 - (**2x**) 100uF 25V Polarized Capacitor: http://amzn.to/2BqkoRN
-- (**3x**) 3mm 3 Pin SPDT Slide Switch: http://amzn.to/2Bpmlhi (optional)
+- (**3x**) 3mm 3 Pin SPDT Slide Switch: http://amzn.to/2Bpmlhi *(optional for camera control)*
 - (**3x**) USB Female Type A 4-Pin Right Angle Connector: http://amzn.to/2DzgasY *(optional for camera control)*
 - (**1x**) 2N3906 PNP Transistor: http://amzn.to/2DvZ9j6
 - (**1x**) 2N2222 NPN Transistor: http://amzn.to/2DByeGN
