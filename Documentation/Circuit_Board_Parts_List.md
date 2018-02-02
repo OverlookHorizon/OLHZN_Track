@@ -36,10 +36,10 @@ You will need to purchase the following parts to assemble this circuit board:
 ## External Part List
 The following parts are not necessary to assemble the circuit board, but the circuit board is designed to work with these external components to complete the full setup.  Many of these components can be omitted or replaced, if desired. These are the components we use.
 
-- (**5x**) Orbtronic 3400mAh 18650 Li-ion batteries: http://amzn.to/2GcfxqK *(2 batteries for Arduino, 1 for each action camera)*
+- (**5x**) Orbtronic 3400mAh 18650 Li-ion batteries: http://amzn.to/2GcfxqK *(2 for Arduino, 1 for each camera)*
 - (**5x**) 5.5x2.1mm Male DC Power Plug: http://amzn.to/2GfsRLc
 - (**1x**) HYD-4218 Active Piezo Alarm: http://amzn.to/2DDyOTM *(optional for audible alarms)*
-- (**3x**) 18650 Single Battery Holder: http://amzn.to/2DImS3b
+- (**3x**) 18650 Single Battery Holder: http://amzn.to/2DImS3b *(optional: 1 for each camera)*
 - (**1x**) 18650 Double Battery Holder: http://amzn.to/2Du36F3
 - (**1x**) DS18B20 Waterproof Temperature Sensor: http://amzn.to/2E6pZ2i *(optional for exterior temperature)*
 - (**1x**) Low Voltage Battery Alarm: http://amzn.to/2DBzUjE *(optional for anomaly alarms)*
