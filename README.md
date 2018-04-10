@@ -18,6 +18,21 @@ This is an Arduino based radio position tracking & data logging system intended 
 
 This code provides transmission of radio telemetry via APRS as well as telemetry logging on OLHZN Arduino Mega compatible circuit boards for High Altitude Ballooning.
 
+#### Software Dependencies ####
+
+This software requires some Arduino libraries in order to function.  Most of them can be installed in the Arduino IDE by going to the menu options **Sketch** >> **Include Library** >> **Manage Libraries...** and then search for the library name **OR** by clicking the links below to manually download the library ZIP file then manually add it to your Arduino sketch from **Sketch** >> **Include Library** >> **Add .ZIP Library**
+
+- [RTClib](https://github.com/adafruit/RTClib)
+- [NewTone](https://bitbucket.org/teckel12/arduino-new-tone/wiki/Home)
+- [OneWire](https://github.com/bigjosh/OneWireNoResistor/)
+- [DallasTemperature](https://github.com/milesburton/Arduino-Temperature-Control-Library)
+- [TinyGPS++](https://github.com/mikalhart/TinyGPSPlus)
+- [DHT](https://github.com/adafruit/DHT-sensor-library)
+- [SFE_BMP180](https://github.com/sparkfun/BMP180_Breakout/tree/master/Libraries/Arduino)
+- [SD](https://github.com/adafruit/SD)
+- [Adafruit_Sensor](https://github.com/adafruit/Adafruit_Sensor)
+- [Adafruit_BME280](https://github.com/adafruit/Adafruit_BME280_Library)
+
 ## Buy an OLHZN Circuit Board
 
 This code is designed for our OLHZN Arduino Mega compatible circuit board (Revision 5). You're certainly welcome to use and adapt this code for your own projects, but you can also purchase one of our circuit boards here: http://overlookhorizon.com/buy-circuit-boards
