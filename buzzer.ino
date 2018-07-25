@@ -33,7 +33,7 @@ void CheckBuzzer(){
       hit_altitude = true;
       writeAltFile();
       buzzer_on = false;      
-    }else if(hitAltitude() && GPS.AltitudeF < BUZZER_ALTITUDE){
+    }else if(hitAltitude() && GPS.AltitudeF < BUZZER_ALTITUDE && GPS.AltitudeF>0){
       if(!buzzer_on && !isTX()){
         NewTone(BUZZER,880,50);
         delay(60);   

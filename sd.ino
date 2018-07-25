@@ -85,7 +85,7 @@ void CheckSD(){
       if(myFile){        
         snprintf(sdLine,
                   600,
-                  "%s,%s,%lu,%u,%s,%u,%u,%s,%s,%u,%s,%s,%s,%d,%s,%lu,%lu,%d,%s,%u,%u,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%s,%s,%s,%s,%s,%s,%d,%s,%s,%s,%u,%u,%u,%u,%s,%s,%s,%s,%lu",
+                  "%s,%s,%lu,%u,%s,%u,%u,%s,%s,%u,%s,%s,%s,%d,%s,%lu,%lu,%d,%s,%u,%u,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%s,%s,%s,%s,%s,%s,%d,%s,%s,%s,%u,%u,%u,%u,%s,%s,%s,%s,%d",
                   elapsedTime,
                   RTCO.timestamp,
                   RTCO.unix,

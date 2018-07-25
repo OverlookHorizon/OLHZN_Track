@@ -5,6 +5,8 @@ byte LastCommand1=0;
 byte LastCommand2=0;
 unsigned long lastReadingTime = 0;
 unsigned long lastAltitude = 0;
+float lastLongitude = 0;
+float lastLatitude = 0;
 float ascentRateMS = 0;
 float ascentRateFT = 0;
 float ascentRateMPH = 0;
@@ -40,12 +42,16 @@ void ReadGPS(void){
   }
   
   GPS.Satellites = (gps.satellites.isValid()) ? gps.satellites.value() : 0;
-  GPS.Longitude = (float)(gps.location.isValid()) ? gps.location.lng() : 0;
-  GPS.Latitude = (float)(gps.location.isValid()) ? gps.location.lat() : 0;
+  #ifndef SIM_DATA
+    GPS.Longitude = (float)(gps.location.isValid()) ? gps.location.lng() : 0;
+    GPS.Latitude = (float)(gps.location.isValid()) ? gps.location.lat() : 0;
+  #endif
   dtostrf(GPS.Latitude,2,6,latitudeChar);
   dtostrf(GPS.Longitude,2,6,longitudeChar);
-  GPS.Altitude = (gps.altitude.isValid()) ? gps.altitude.meters() : 0;
-  GPS.AltitudeF = (gps.altitude.isValid()) ? gps.altitude.feet() : 0;
+  #ifndef SIM_DATA
+    GPS.Altitude = (gps.altitude.isValid()) ? gps.altitude.meters() : 0;
+    GPS.AltitudeF = (gps.altitude.isValid()) ? gps.altitude.feet() : 0;
+  #endif
   GPS.Hours = (gps.time.isValid()) ? gps.time.hour() : 0;
   GPS.Minutes = (gps.time.isValid()) ? gps.time.minute() : 0;
   GPS.Seconds = (gps.time.isValid()) ? gps.time.second() : 0;
@@ -139,16 +145,24 @@ double kmToMi(double km){
 }
 
 void calculateAscentRate(){
-  if(lastReadingTime>0 && GPS.Altitude!=lastAltitude){
+  if(lastReadingTime>0 && GPS.Altitude!=lastAltitude && (GPS.Latitude!=lastLatitude || GPS.Longitude!=lastLongitude)){
     ascentRateMS = (float)((float)GPS.Altitude - (float)lastAltitude) / (((float)millis()-(float)lastReadingTime)/1000);
+    ascentRateFT = mToF(ascentRateMS);
+    ascentRateMPH = ascentRateMS*2.23694;
+    dtostrf(ascentRateMS,3,2,ascentRateMSChar);
+    dtostrf(ascentRateFT,3,2,ascentRateFTChar);
+    dtostrf(ascentRateMPH,3,2,ascentRateMPHChar);
+    lastReadingTime = millis();
+    lastAltitude = GPS.Altitude;
+    lastLatitude = GPS.Latitude;
+    lastLongitude = GPS.Longitude;
   }
-  ascentRateFT = mToF(ascentRateMS);
-  ascentRateMPH = ascentRateMS*2.23694;
-  dtostrf(ascentRateMS,3,2,ascentRateMSChar);
-  dtostrf(ascentRateFT,3,2,ascentRateFTChar);
-  dtostrf(ascentRateMPH,3,2,ascentRateMPHChar);
-  lastReadingTime = millis();
-  lastAltitude = GPS.Altitude;  
+  if(lastReadingTime<=0){    
+    lastReadingTime = millis();
+    lastAltitude = GPS.Altitude;
+    lastLatitude = GPS.Latitude;
+    lastLongitude = GPS.Longitude;
+  }
 }
 
 float getAscentRate(){
@@ -188,7 +202,7 @@ char* getLongitudeChar(){
 }
 
 char* getLaunchLatitudeChar(){
-  return longitudeChar;
+  return latitudeChar;
 }
 
 char* getLaunchLongitudeChar(){

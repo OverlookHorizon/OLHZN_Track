@@ -23,6 +23,17 @@
 
 #ifdef APRS_DATA
 
+
+#ifdef SIM_DATA
+                                      //ADD YOUR OWN DATA TO THIS SECTION FOR SIMULATING FLIGHT DATA FOR TESTING PURPOSES
+  static const float simLats[] = {};    //comma separated array of floats to simulate latitude values for testing.
+  static const float simLongs[] = {};   //comma separated array of floats to simulate longitude values for testing.
+  static const int simAlts[] = {};      //comma separated array of ints to simulate altitude values (in meters) for testing.
+  static const int simTemps[] = {};     //comma separated array of floats to simulate temperature values (in °F) for testing.
+  static const float simHumids[] = {};  //comma separated array of floats to simulate humidity % (RH%) values for testing.
+  static const int simPress[] = {};     //comma separated array of floats to simulate pressure values (in millbars) for testing.
+#endif
+
 #include <util/crc16.h>
 #include <avr/pgmspace.h>
 
@@ -39,8 +50,8 @@
 
 #define APRS_DEVID "APEHAB"
 
-char * APRS_SYMBOL = "O";
-uint8_t APRS_SSID = 11;
+//char * APRS_SYMBOL = "O";
+//uint8_t APRS_SSID = 11;
 
 char lastTransmissionTime[20];
 
@@ -70,15 +81,13 @@ void SetupAPRS(void){
   #ifdef APRS_ENABLE
     pinMode(APRS_ENABLE, OUTPUT);
     digitalWrite(APRS_ENABLE, 0);
+    delay(25);
   #endif
-
   // Fast PWM mode, non-inverting output on OC2A
   TCCR2A = _BV(COM2B1) | _BV(WGM21) | _BV(WGM20);
-  TCCR2B = _BV(CS20);
-  
+  TCCR2B = _BV(CS20);  
   pinMode(APRS_DATA, OUTPUT);
-  randomSeed(analogRead(A6));
-  
+  randomSeed(analogRead(A6));  
 }
 
 boolean isTX(){
@@ -92,8 +101,8 @@ boolean isTX(){
 void CheckAPRS(void){
   if ((millis() >= NextAPRS) && (GPS.Satellites >= 4 || getLogStarted()) && (_txlen == 0)){
 
-      APRS_SSID = 11;         //set APRS_SSID to 9 for testing mode, 11 (or 12) for flight mode
-      APRS_SYMBOL = "O";      //set APRS_SYMBOL to > for car icon, O for flight mode
+//      APRS_SSID = 12;         //set APRS_SSID to 9 for testing mode, 11 (or 12) for flight mode
+//      APRS_SYMBOL = "O";      //set APRS_SYMBOL to > for car icon, O for flight mode
     
       Seconds = 60;
       
@@ -108,13 +117,16 @@ void CheckAPRS(void){
         if(APRS_SSID!=11 && APRS_SSID!=12){          
           //testing mode
           Seconds = random(25,36);
-        }else if(GPS.AltitudeF<3500 && GPS.Speed > 6){
+        }else if(GPS.AltitudeF<3800 && GPS.Speed > 6){
           //really low altitude and still moving
           Seconds = 12;
-        }else if(GPS.AltitudeF < 3500 && GPS.Speed <= 6){
+        }else if(GPS.AltitudeF < 3800 && GPS.Speed <= 6){
           //landed or not launched
           Seconds = random(15,31);
-        }else if(GPS.AltitudeF < 18000 && GPS.AltitudeF>=3500){        
+        }else if(GPS.AltitudeF < 10000 && GPS.AltitudeF>=3800){        
+          //pretty low altitude
+          Seconds = random(15,36);
+        }else if(GPS.AltitudeF < 18000 && GPS.AltitudeF>=10000){        
           //low altitude and still moving
           Seconds = random(25,61);
         }else if(GPS.AltitudeF > 90000){
@@ -141,7 +153,7 @@ void CheckAPRS(void){
       #endif
         
       NextAPRS = millis() + (Seconds * 1000L);  
-      strncpy(lastTransmissionTime,RTCO.timestamp,19);
+      strncpy(lastTransmissionTime,GPS.Timestamp,19);
       lastTransmissionTime[19] = '\0';        //guarding for null terminated strings
       #ifdef RTTY_INTERVAL
         if(millis() - getLastRTTY() >= (getRTTYInterval()*1000L)){
@@ -209,6 +221,7 @@ void ax25_frame(const char *scallsign, const char sssid, const char *dcallsign, 
 
 #ifdef APRS_ENABLE
   digitalWrite(APRS_ENABLE, 1);
+  delay(25);
 #endif
 }
 
@@ -217,9 +230,20 @@ void tx_aprs(void){
   char slng[5];
   char stlm[75];
   char *ptr;
-  static uint16_t seq = 0;
+  #ifdef SIM_DATA
+    static uint16_t seq = 0;
+  #else
+    static uint16_t seq = 0;
+  #endif
   int32_t aprs_lat, aprs_lon, aprs_alt;
   char Wide1Path, Wide2Path;
+  
+  #ifdef SIM_DATA
+    GPS.Latitude = simLats[seq];
+    GPS.Longitude = simLongs[seq];
+    GPS.Altitude = simAlts[seq];
+    GPS.AltitudeF = mToF(GPS.Altitude);
+  #endif
   
   // Convert the UBLOX-style coordinates to the APRS compressed format
   aprs_lat = 380926 * (90.0 - GPS.Latitude);
@@ -247,18 +271,30 @@ void tx_aprs(void){
   ptr += 2;
   ax25_base91enc(ptr, 2, GPS.Satellites);
   ptr += 2;
-#ifdef WIREBUS  
-  ax25_base91enc(ptr, 2, (int)DS18B20_Temperatures[0] + 100);
-  ptr += 2;
-  ax25_base91enc(ptr, 2, (int)DS18B20_Temperatures[1] + 100);
-  ptr += 2;
-  #ifdef DHTPIN
-    ax25_base91enc(ptr, 2, (int)readHumid() + 100);
-  #else
-    ax25_base91enc(ptr, 2, (int)getHumidityRead() + 100);
+    
+  #ifdef SIM_DATA
+    ax25_base91enc(ptr, 2, (int)simTemps[seq] + 100);
+    ptr += 2;
+    ax25_base91enc(ptr, 2, (int)(simPress[seq]) + 100);
+    ptr += 2;
+    ax25_base91enc(ptr, 2, (int)simHumids[seq] + 100);
+    ptr += 2;
+  #else  
+    #ifdef WIREBUS  
+      ax25_base91enc(ptr, 2, (int)DS18B20_Temperatures[1] + 100);
+      ptr += 2;
+      #ifdef DHTPIN
+        ax25_base91enc(ptr, 2, (int)getPressureRead() + 100);
+        ptr += 2;
+        ax25_base91enc(ptr, 2, (int)readHumid() + 100);
+      #else
+        ax25_base91enc(ptr, 2, (int)DS18B20_Temperatures[0] + 100);
+        ptr += 2;
+        ax25_base91enc(ptr, 2, (int)getHumidityRead() + 100);
+      #endif
+      ptr += 2;
+    #endif
   #endif
-  ptr += 2;
-#endif
 ax25_base91enc(ptr, 2, (getVoltage(0)*100));  
 
     
@@ -293,13 +329,24 @@ ax25_base91enc(ptr, 2, (getVoltage(0)*100));
   #define APRS_UNIT1    ":%-9s:UNIT.Sats"
   #define APRS_EQNS1    ":%-9s:EQNS.0,1,0"
 
-  #define APRS_PARM2   ",External"
-  #define APRS_UNIT2   ",deg.F"
-  #define APRS_EQNS2   ",0,1,-100"
   
-  #define APRS_PARM3   ",Internal"
-  #define APRS_UNIT3   ",deg.F"
-  #define APRS_EQNS3   ",0,1,-100"
+  #ifdef DHTPIN
+    #define APRS_PARM2   ",Temperature"
+    #define APRS_UNIT2   ",deg.F"
+    #define APRS_EQNS2   ",0,1,-100"
+  
+    #define APRS_PARM3   ",Pressure"
+    #define APRS_UNIT3   ",mbar"
+    #define APRS_EQNS3   ",0,1,-100"
+  #else
+    #define APRS_PARM2   ",External"
+    #define APRS_UNIT2   ",deg.F"
+    #define APRS_EQNS2   ",0,1,-100"
+  
+    #define APRS_PARM3   ",Internal"
+    #define APRS_UNIT3   ",deg.F"
+    #define APRS_EQNS3   ",0,1,-100"
+  #endif
 
   #define APRS_PARM4   ",Humidity"
   #define APRS_UNIT4   ",pct"
@@ -393,6 +440,7 @@ ISR(TIMER2_OVF_vect){
 
         #ifdef APRS_ENABLE
           digitalWrite(APRS_ENABLE, 0);
+          delay(25);
         #endif
 
         #ifdef LED_TX
@@ -467,8 +515,12 @@ int getAPRSMode(){
   return aprs_mode;
 }
 
-unsigned long getNextAPRS(){
-  return ((NextAPRS - millis())/1000);
+int getNextAPRS(){
+  int next_tx = ceil((NextAPRS - millis())/1000);
+  if(next_tx<0){
+    next_tx = 0;
+  }    
+  return next_tx;
 }
 
 char* getLastTXtime(){

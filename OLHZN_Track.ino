@@ -4,7 +4,7 @@
  * add error debugging by writing to SD card for errors
  * add different LED pattern & tone for SD card failure since we can't debug at that point
  * edit the NewTone library to change timers to avoid timer conflicts
- * use json objects for settings and persistent storage inside a file on the SD card
+ * use json objects or some other method for settings and persistent data storage inside a file on the SD card
  * 
  * EXTERNAL LIBRARY DEPENDENCIES
  * RTClib.h
@@ -51,11 +51,15 @@
 //  #define RTTY_ATTEMPTS        3              //number of times to repeat the broadcast, per transmission session
 
   // APRS settings
-  #define APRS_CALLSIGN    "CHANGEME"            // Max 6 characters
-  #define APRS_PATH_ALTITUDE   2000            // Below this altitude, ** in metres **, path will switch to WIDE1-1, WIDE2-1.  Above it will be or path or WIDE2-1 (see below)
-  #define APRS_HIGH_USE_WIDE2    1             // 1 means WIDE2-1 is used at altitude; 0 means no path is used
+  //#define SIM_DATA                            // uncomment to manually provide flight data (APRS.ino tab) for simulating a flight path for testing purposes
+  #define APRS_CALLSIGN    "CHANGEME"             // Max 6 characters
+  #define APRS_PATH_ALTITUDE   2000             // Below this altitude, ** in metres **, path will switch to WIDE1-1, WIDE2-1.  Above it will be or path or WIDE2-1 (see below)
+  #define APRS_HIGH_USE_WIDE2    1              // 1 means WIDE2-1 is used at altitude; 0 means no path is used
   
-  #define APRS_PRE_EMPHASIS                    // Comment out to disable 3dB pre-emphasis.
+  #define APRS_PRE_EMPHASIS                     // Comment out to disable 3dB pre-emphasis.
+  #define APRS_SSID             11               //set APRS_SSID to 9 for testing mode, 11 (or 12) for flight mode
+  #define APRS_SYMBOL          "O"              //set APRS_SYMBOL to > for car icon (for testing), O for balloon icon (for flying)
+
   
   #define APRS_COMMENT     "OverlookHorizon.com"    //enter whatever you want (within reason)
   #define APRS_TELEM_INTERVAL  5                // How often to send telemetry packets.... every X transmissions.  Comment out to disable  
@@ -69,9 +73,10 @@
   #define WIREBUS             6                 //for reading temperature sensors
   #define EXPECTED_SENSORS    2                 //number of temperature sensors you intend to use
   #define BUZZER              A2                //piezo. beeps while acquiring GPS signal.  Supposed to beep during landing, but this part is broken right now.
-  #define BUZZER_ALTITUDE     2000              //value in feet.  Should be about 500 feet above your expected landing elevation. About 2000 for OLHZN flights. TODO: fix the buzzer!
+  #define BUZZER_ALTITUDE     2000              //value in feet.  Should be about 500 feet above your expected landing elevation. About 2000 FT for OLHZN flights. TODO: fix the buzzer!
   //#define CANON_PIN           4               //deprecated from rev. 2 board
   #define USE_RTC                               //whether or not to use the RTC clock onboard a data logging shield
+  #define RTC_CHIP            8523              //enter either 1307 (DS1307) or 8523 (PCF8523) for Adafruit logging shields.  DS1307 is the older model RTC chip.  PCF8523 is the new upgraded RTC chip on Rev. B Adafruit logging shields.
   #define LOG_DATA                              //whether or not to log data to an SD card.  If you turn this off, the watchdog timer may reboot the system repeatedly so turn it off or add a reset somewhere else.
   
   #define LOG_PRESSURE                          //whether to use the BMP180 or BME280 breakout boards
@@ -85,7 +90,7 @@
   #define A7_MULTIPLIER        2.5              //voltage multiplier for camera 3 battery. not actually connected on revision 5 board. coming soon via revision 6.
   //#define BURST_CAM_PIN       36              //deprecated from rev. 4 board
   //#define BURST_CAM_ALT       0               //deprecated from rev. 4 board
-  #define ANOMALY_ALARM_PIN   52                //LiPo low voltage alarm. Used to report anomalies. GND to GND, PWR to LiPo alarm pin 2.
+  #define ANOMALY_ALARM_PIN    52               //LiPo low voltage alarm. Used to report anomalies. GND to GND, PWR to LiPo alarm pin 2.
   //#define DEBUG_SERIAL        Serial          //uncomment for debugging via the serial terminal
   #define USE_WATCHDOG                          //automatically reboot the Arduino if it hangs
   
@@ -108,13 +113,16 @@
 
 #ifdef USE_RTC
   #include "RTClib.h"
-  RTC_DS1307 RTC;
+  #if RTC_CHIP == 1307
+    RTC_DS1307 RTC;
+  #else
+    RTC_PCF8523 RTC;
+  #endif
 #endif
 
 #ifdef USE_WATCHDOG
   #include <avr/wdt.h>
 #endif
-
 
 //#include <aJSON.h>
 //aJsonObject* jsonRoot = aJson.createObject();

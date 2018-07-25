@@ -6,8 +6,14 @@ char time_buffer[20];
 
 void SetupRTC(){  
   RTC.begin();
-  if (! RTC.isrunning())
-    RTC.adjust(DateTime(F(__DATE__), F(__TIME__)));
+
+  #if RTC_CHIP == 1307
+    if (! RTC.isrunning())
+      RTC.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  #else
+    if(!RTC.initialized())
+      RTC.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  #endif
 
     
   if(RTC.now().year()!=curYear){
@@ -25,7 +31,7 @@ void SetupRTC(){
 }
 
 void CheckRTC(){
-  if(GPS.Satellites>=3 && GPS.Lock==1 && !time_adjusted && gps.date.year()==curYear){
+  if(GPS.Satellites>=6 && !time_adjusted && gps.date.year()==curYear){
     RTC.adjust(DateTime(gps.date.year(), gps.date.month(), gps.date.day(), gps.time.hour(), gps.time.minute(), gps.time.second())); 
     time_adjusted = true;
   }  

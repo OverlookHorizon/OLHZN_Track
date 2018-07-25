@@ -3,8 +3,6 @@
 /*                                                                            */
 /*   Code for reading OneWire Temperature devices/averaging ADC channels      */
 /*                                                                            */
-/*                                                                            */
-/*                                                                            */
 /* ========================================================================== */
 
 // Variables
