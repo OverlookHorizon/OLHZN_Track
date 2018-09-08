@@ -51,9 +51,9 @@ The OLHZN_Track code is provided as is with no guarantees of performance or oper
 
 If you decide to use this code under a balloon it is your responsibility to ensure you comply with the local legislation and laws regarding unmanned free meteorological balloon launching and airborne radio transmission.
 
-The Radiometrix HX-1 144.390 MHz is NOT license exempt in the United States of America and does need an amateur radio license issued by the FCC.
+The Radiometrix HX-1 144.390 MHz is **NOT** license exempt in the United States of America and **requires** an amateur radio license issued by the FCC.
 
-Use of APRS requires an amateur radio  license in all countries and a number of countries don’t permit the airborne use of APRS under any circumstances. 
+Use of APRS requires an amateur radio license in many countries and a number of countries don’t permit the airborne use of APRS under any circumstances. 
 
 It is YOUR responsibility to ensure your hardware and code is used safely and legally.
 
