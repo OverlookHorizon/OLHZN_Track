@@ -8,6 +8,7 @@ Overlook Horizon Inc. (**OLHZN**) is a 501(c)(3) non-profit charitable organizat
 - **Twitter:** http://twitter.com/OLHZN
 - **Instagram:** http://instagram.com/OLHZN
 - **YouTube:** http://youtube.com/OLHZN
+- **Discord:** https://discord.gg/vxnAf4T
 - **Donate:** http://donorbox.org/OLHZN
 
 ## About the OLHZN-Track Software
